@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin Panel - Hulk SMP Orders</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #121212;
+      color: #ddd;
+      padding: 20px;
+    }
+    h1 {
+      color: #5efc8d;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      padding: 10px;
+      border: 1px solid #333;
+      text-align: left;
+    }
+    th {
+      background: #16213e;
+    }
+    tbody tr:nth-child(even) {
+      background: #1f2833;
+    }
+  </style>
+</head>
+<body>
+  <h1>All Orders</h1>
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Date</th>
+        <th>Username</th>
+        <th>Payment Method</th>
+        <th>Transaction ID</th>
+        <th>Email / Discord</th>
+        <th>Cart Items</th>
+      </tr>
+    </thead>
+    <tbody id="orders-table-body">
+      <tr><td colspan="7" style="text-align:center;">Loading...</td></tr>
+    </tbody>
+  </table>
+
+  <script>
+    async function fetchOrders() {
+      try {
+        const res = await fetch('/admin/orders');
+        if (!res.ok) throw new Error('Failed to fetch orders');
+        const orders = await res.json();
+        const tbody = document.getElementById('orders-table-body');
+        if (orders.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No orders yet.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = '';
+        orders.forEach(order => {
+          const tr = document.createElement('tr');
+
+          const cartItems = order.cart.length
+            ? order.cart.map(item => `${item.name} x${item.quantity}`).join(', ')
+            : 'Empty';
+
+          tr.innerHTML = `
+            <td>${order.id}</td>
+            <td>${new Date(order.date).toLocaleString()}</td>
+            <td>${order.username}</td>
+            <td>${order.method}</td>
+            <td>${order.txn}</td>
+            <td>${order.email}</td>
+            <td>${cartItems}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (error) {
+        const tbody = document.getElementById('orders-table-body');
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color: red;">${error.message}</td></tr>`;
+      }
+    }
+
+    // Load orders on page load
+    fetchOrders();
+  </script>
+</body>
+</html>
