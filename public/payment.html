@@ -5,23 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Checkout - Hulk SMP Store</title>
   <style>
-    /* Reset */
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background: #1a1a2e;
       color: #eee;
       margin: 0;
-      padding: 0;
+      padding: 20px;
       display: flex;
       justify-content: center;
       align-items: center;
       min-height: 100vh;
-      padding: 20px;
     }
-
     .payment-container {
       background: #16213e;
       border-radius: 10px;
@@ -30,51 +25,41 @@
       width: 100%;
       box-shadow: 0 0 15px rgba(58, 123, 213, 0.7);
     }
-
     h2 {
       margin-bottom: 15px;
       text-align: center;
       font-weight: 700;
       color: #5efc8d;
-      letter-spacing: 1px;
     }
     .payment-info {
       background: #0f1626;
       border-radius: 8px;
       padding: 15px 20px;
       margin-bottom: 20px;
-      font-size: 0.9rem;
-      line-height: 1.5;
+      font-size: 0.95rem;
+      line-height: 1.6;
       color: #a5d6ff;
     }
-
     label {
       display: block;
       margin-bottom: 6px;
       font-weight: 600;
       color: #a5d6ff;
     }
-
     input[type="text"], select {
       width: 100%;
-      padding: 12px 15px;
+      padding: 12px;
       margin-bottom: 20px;
       border-radius: 6px;
       border: none;
       font-size: 1rem;
-      outline-offset: 2px;
-      outline-color: #5efc8d;
       background: #0f1626;
       color: #eee;
-      transition: background-color 0.3s ease;
+      outline-color: #5efc8d;
     }
-
-    input[type="text"]:focus,
-    select:focus {
+    input[type="text"]:focus, select:focus {
       background: #223354;
-      outline-color: #00ff9f;
     }
-
     button.submit-btn {
       width: 100%;
       padding: 14px;
@@ -85,31 +70,21 @@
       font-size: 1.1rem;
       color: #16213e;
       cursor: pointer;
-      transition: background-color 0.3s ease;
     }
-
     button.submit-btn:hover:not(:disabled) {
       background: #4cd673;
     }
-
     button.submit-btn:disabled {
       background: #8fd9ae;
       cursor: not-allowed;
     }
-
     .message {
       text-align: center;
       margin-top: 15px;
       font-weight: 600;
     }
-
-    .message.success {
-      color: #00ff9f;
-    }
-
-    .message.error {
-      color: #ff5656;
-    }
+    .message.success { color: #00ff9f; }
+    .message.error { color: #ff5656; }
   </style>
 </head>
 <body>
@@ -117,28 +92,31 @@
     <h2>Checkout</h2>
 
     <div class="payment-info">
-      <strong>bKash Number:</strong> 01712345678<br />
-      <strong>Nagad Number:</strong> 01887654321<br />
-      <strong>UPI ID (India):</strong> example@oksbi
+      <strong>bKash:</strong> 01712345678<br />
+      <strong>Nagad:</strong> 01887654321<br />
+      <strong>Rocket:</strong> 01999887766<br />
+      <strong>UPI (India):</strong> example@oksbi
     </div>
 
     <form id="checkout-form" novalidate>
       <label for="username">Minecraft Username</label>
-      <input type="text" id="username" name="username" placeholder="Your Minecraft username" required autocomplete="off" />
+      <input type="text" id="username" name="username" placeholder="Your Minecraft username" required />
 
       <label for="method">Payment Method</label>
       <select id="method" name="method" required>
-        <option value="" disabled selected>Select a payment method</option>
+        <option value="" disabled selected>Select payment method</option>
         <option value="bkash">bKash</option>
         <option value="nagad">Nagad</option>
+        <option value="rocket">Rocket</option>
         <option value="upi">UPI</option>
+        <option value="other">Other</option>
       </select>
 
       <label for="txn">Transaction ID</label>
-      <input type="text" id="txn" name="txn" placeholder="Your payment transaction ID" required autocomplete="off" />
+      <input type="text" id="txn" name="txn" placeholder="Transaction ID" required />
 
       <label for="email">Email / Discord</label>
-      <input type="text" id="email" name="email" placeholder="Your Email or Discord tag" required autocomplete="off" />
+      <input type="text" id="email" name="email" placeholder="Email or Discord tag" required />
 
       <button type="submit" class="submit-btn">Submit Order</button>
     </form>
@@ -146,7 +124,7 @@
     <div id="message" class="message"></div>
   </div>
 
-  <!-- Firebase SDK -->
+  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <script>
@@ -158,7 +136,7 @@
       projectId: "zerox-only",
       storageBucket: "zerox-only.appspot.com",
       messagingSenderId: "1079608891590",
-      appId: "1:1079608891590:web:b2de1b15e425490339dfc7",
+      appId: "1:1079608891590:web:b2de1b15e425490339dfc7"
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
@@ -169,46 +147,43 @@
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-
-      // Clear messages
       messageDiv.textContent = '';
       messageDiv.className = 'message';
 
-      // Basic validation check
-      if (!form.checkValidity()) {
-        messageDiv.textContent = '⚠️ Please fill out all fields correctly.';
+      // Very basic check
+      if (!form.username.value.trim() || !form.txn.value.trim() || !form.email.value.trim() || !form.method.value) {
+        messageDiv.textContent = '⚠️ Please fill out all fields.';
         messageDiv.classList.add('error');
         return;
       }
 
-      // Disable button and show loading text
       submitBtn.disabled = true;
       submitBtn.textContent = 'Submitting...';
 
-      // Prepare data to send to Firebase
       const orderData = {
         username: form.username.value.trim(),
         method: form.method.value,
         txn: form.txn.value.trim(),
         email: form.email.value.trim(),
         status: "pending",
-        createdAt: Date.now(),
+        createdAt: Date.now()
       };
 
       try {
         await db.ref('orders').push(orderData);
         messageDiv.textContent = "✅ Order submitted successfully!";
         messageDiv.classList.add('success');
-        form.reset();
 
-        // Redirect after 2 seconds
+        form.reset();
+        localStorage.removeItem('cartData'); // Clear cart
+
         setTimeout(() => {
           window.location.href = "/";
         }, 2000);
       } catch (error) {
-        messageDiv.textContent = "❌ Failed to submit order. Please try again.";
+        console.error('Firebase Error:', error);
+        messageDiv.textContent = "❌ Order failed. Try again.";
         messageDiv.classList.add('error');
-        console.error('Error submitting order:', error);
       } finally {
         submitBtn.disabled = false;
         submitBtn.textContent = 'Submit Order';
