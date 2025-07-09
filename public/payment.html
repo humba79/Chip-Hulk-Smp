@@ -32,11 +32,20 @@
     }
 
     h2 {
-      margin-bottom: 25px;
+      margin-bottom: 15px;
       text-align: center;
       font-weight: 700;
       color: #5efc8d;
       letter-spacing: 1px;
+    }
+    .payment-info {
+      background: #0f1626;
+      border-radius: 8px;
+      padding: 15px 20px;
+      margin-bottom: 20px;
+      font-size: 0.9rem;
+      line-height: 1.5;
+      color: #a5d6ff;
     }
 
     label {
@@ -107,6 +116,12 @@
   <div class="payment-container">
     <h2>Checkout</h2>
 
+    <div class="payment-info">
+      <strong>bKash Number:</strong> 017XXXXXXXX<br />
+      <strong>Nagad Number:</strong> 018XXXXXXXX<br />
+      <strong>UPI ID:</strong> example@upi
+    </div>
+
     <form id="checkout-form" novalidate>
       <label for="username">Minecraft Username</label>
       <input type="text" id="username" name="username" placeholder="Your Minecraft username" required autocomplete="off" />
@@ -131,7 +146,23 @@
     <div id="message" class="message"></div>
   </div>
 
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <script>
+    // Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyC2QBljKAKgrEQRIaJSip7dTZw90qkCcRM",
+      authDomain: "zerox-only.firebaseapp.com",
+      databaseURL: "https://zerox-only-default-rtdb.firebaseio.com",
+      projectId: "zerox-only",
+      storageBucket: "zerox-only.appspot.com",
+      messagingSenderId: "1079608891590",
+      appId: "1:1079608891590:web:b2de1b15e425490339dfc7",
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
     const form = document.getElementById('checkout-form');
     const submitBtn = form.querySelector('button.submit-btn');
     const messageDiv = document.getElementById('message');
@@ -154,39 +185,30 @@
       submitBtn.disabled = true;
       submitBtn.textContent = 'Submitting...';
 
-      // Prepare data
-      const payload = {
+      // Prepare data to send to Firebase
+      const orderData = {
         username: form.username.value.trim(),
         method: form.method.value,
         txn: form.txn.value.trim(),
         email: form.email.value.trim(),
-        cart: JSON.parse(localStorage.getItem('cartData')) || []
+        status: "pending",
+        createdAt: Date.now(),
       };
 
       try {
-        const res = await fetch('/orders', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
+        await db.ref('orders').push(orderData);
+        messageDiv.textContent = "✅ Order submitted successfully!";
+        messageDiv.classList.add('success');
+        form.reset();
 
-        if (res.ok) {
-          messageDiv.textContent = "✅ Order submitted successfully!";
-          messageDiv.classList.add('success');
-          localStorage.removeItem('cartData');
-          form.reset();
-
-          // Redirect after short delay
-          setTimeout(() => {
-            window.location.href = "/";
-          }, 2000);
-        } else {
-          throw new Error('Network response was not ok');
-        }
+        // Redirect after 2 seconds
+        setTimeout(() => {
+          window.location.href = "/";
+        }, 2000);
       } catch (error) {
         messageDiv.textContent = "❌ Failed to submit order. Please try again.";
         messageDiv.classList.add('error');
-        console.error('Order submission error:', error);
+        console.error('Error submitting order:', error);
       } finally {
         submitBtn.disabled = false;
         submitBtn.textContent = 'Submit Order';
