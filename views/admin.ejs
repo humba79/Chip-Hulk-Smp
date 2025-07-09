@@ -1,1 +1,66 @@
-...
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Panel - Orders</title>
+  <style>
+    body {
+      background: #0e0e16;
+      color: white;
+      font-family: Arial, sans-serif;
+      padding: 2rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #1c1c2b;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    th, td {
+      padding: 1rem;
+      text-align: left;
+      border-bottom: 1px solid #333;
+    }
+    th {
+      background: #3f0ca3;
+    }
+    tr:hover {
+      background: #2b1a44;
+    }
+    h1 {
+      margin-bottom: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>🧾 Order List</h1>
+  <table>
+    <tr>
+      <th>Username</th>
+      <th>Email/Discord</th>
+      <th>Payment</th>
+      <th>Txn ID</th>
+      <th>Items</th>
+      <th>Time</th>
+    </tr>
+    <% orders.forEach(order => { %>
+      <tr>
+        <td><%= order.username %></td>
+        <td><%= order.email %></td>
+        <td><%= order.method %></td>
+        <td><%= order.txn %></td>
+        <td>
+          <ul>
+            <% order.items.forEach(item => { %>
+              <li><%= item.name %> – ৳<%= item.price %></li>
+            <% }); %>
+          </ul>
+        </td>
+        <td><%= order.createdAt.toLocaleString() %></td>
+      </tr>
+    <% }); %>
+  </table>
+</body>
+</html>
