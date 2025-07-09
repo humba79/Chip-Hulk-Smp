@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hulk SMP Store</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="background-animation"></div>
+  <header>
+    <h1>Hulk SMP Store</h1>
+    <p>Buy Ranks, Crates, Perks & more!</p>
+  </header>
+
+  <nav>
+    <a href="#store">Store</a>
+    <a href="#howtobuy">How to Buy</a>
+    <a href="#contact">Contact</a>
+  </nav>
+
+  <main id="store" class="container">
+    <h2>🛒 Shop Items</h2>
+    <div class="store-grid">
+      <div class="item">
+        <h3>VIP Rank</h3>
+        <p>৳150</p>
+        <button onclick="addToCart('VIP Rank', 150)">Add to Cart</button>
+      </div>
+      <div class="item">
+        <h3>Crate Key</h3>
+        <p>৳100</p>
+        <button onclick="addToCart('Crate Key', 100)">Add to Cart</button>
+      </div>
+      <div class="item">
+        <h3>Fly Access</h3>
+        <p>৳200</p>
+        <button onclick="addToCart('Fly Access', 200)">Add to Cart</button>
+      </div>
+    </div>
+
+    <div id="cart">
+      <h2>Your Cart</h2>
+      <ul id="cart-items"></ul>
+      <p>Total: ৳<span id="total">0</span></p>
+      <a href="payment.html" class="checkout-btn">Checkout</a>
+    </div>
+  </main>
+
+  <section id="howtobuy" class="info-section">
+    <h2>💳 How to Buy</h2>
+    <p>1. Add items to cart.<br>2. Proceed to checkout.<br>3. Pay via bKash, Nagad, or UPI.</p>
+  </section>
+
+  <section id="contact" class="info-section">
+    <h2>📞 Contact</h2>
+    <p>Email: rubyatferdous79@gmail.com</p>
+    <div class="discord-widget">
+      <iframe src="https://discord.com/widget?id=YOUR_SERVER_ID&theme=dark" width="350" height="200" allowtransparency="true" frameborder="0" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"></iframe>
+    </div>
+  </section>
+
+  <footer>
+    &copy; 2025 Hulk SMP. All rights reserved.
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

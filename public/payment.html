@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Checkout - Hulk SMP Store</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="payment-container">
+    <h2>Checkout</h2>
+
+    <form id="checkout-form">
+      <label for="username">Minecraft Username</label>
+      <input type="text" id="username" required />
+
+      <label for="method">Payment Method</label>
+      <select id="method" required>
+        <option value="bkash">bKash</option>
+        <option value="nagad">Nagad</option>
+        <option value="upi">UPI</option>
+      </select>
+
+      <label for="txn">Transaction ID</label>
+      <input type="text" id="txn" required />
+
+      <label for="email">Email / Discord</label>
+      <input type="text" id="email" required />
+
+      <button type="submit" class="submit-btn">Submit Order</button>
+    </form>
+  </div>
+
+  <script>
+    const form = document.getElementById('checkout-form');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const payload = {
+        username: document.getElementById('username').value,
+        method: document.getElementById('method').value,
+        txn: document.getElementById('txn').value,
+        email: document.getElementById('email').value,
+        cart: JSON.parse(localStorage.getItem('cartData')) || []
+      };
+
+      const res = await fetch('/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (res.ok) {
+        alert("✅ Order submitted!");
+        localStorage.clear();
+        window.location.href = "/";
+      } else {
+        alert("❌ Failed to submit. Try again.");
+      }
+    });
+  </script>
+</body>
+</html>
