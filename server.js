@@ -32,4 +32,4 @@ app.use(express.static('public'));
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
-app.use(express.static('public')); // must exist
+
