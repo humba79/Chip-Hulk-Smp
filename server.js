@@ -1,35 +1,45 @@
 const express = require('express');
-const cors = require('cors');
+const path = require('path');
 const app = express();
+
+// ===== Settings =====
 const PORT = process.env.PORT || 3000;
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
 
-app.use(cors());
-app.use(express.json());
+// ===== Middleware =====
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.urlencoded({ extended: true }));
 
-// In-memory storage of orders (reset on server restart)
-const orders = [];
+// ===== Admin Auth Middleware =====
+function adminAuth(req, res, next) {
+  const auth = { login: 'admin', password: 'admin123' };
 
-// Endpoint to receive orders
-app.post('/orders', (req, res) => {
-  const order = req.body;
-  if (!order.username || !order.method || !order.txn || !order.email) {
-    return res.status(400).json({ error: 'Missing required fields' });
+  const b64auth = (req.headers.authorization || '').split(' ')[1] || '';
+  const [login, password] = Buffer.from(b64auth, 'base64').toString().split(':');
+
+  if (login === auth.login && password === auth.password) {
+    return next();
   }
-  order.id = orders.length + 1;
-  order.date = new Date().toISOString();
-  orders.push(order);
-  res.status(201).json({ message: 'Order saved', id: order.id });
+
+  res.set('WWW-Authenticate', 'Basic realm="Admin Area"');
+  res.status(401).send('Authentication required.');
+}
+
+// ===== Routes =====
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Endpoint to get all orders (for admin panel)
-app.get('/admin/orders', (req, res) => {
-  res.json(orders);
+app.get('/payment', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'payment.html'));
 });
 
-// Serve static files (for admin panel frontend)
-app.use(express.static('public'));
+app.get('/admin', adminAuth, (req, res) => {
+  res.render('admin'); // Renders views/admin.ejs
+});
 
+// ===== Start Server =====
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`✅ Server is running at http://localhost:${PORT}`);
 });
-
