@@ -2,60 +2,194 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Checkout - Hulk SMP Store</title>
-  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* Reset */
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #1a1a2e;
+      color: #eee;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .payment-container {
+      background: #16213e;
+      border-radius: 10px;
+      padding: 30px 40px;
+      max-width: 400px;
+      width: 100%;
+      box-shadow: 0 0 15px rgba(58, 123, 213, 0.7);
+    }
+
+    h2 {
+      margin-bottom: 25px;
+      text-align: center;
+      font-weight: 700;
+      color: #5efc8d;
+      letter-spacing: 1px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+      color: #a5d6ff;
+    }
+
+    input[type="text"], select {
+      width: 100%;
+      padding: 12px 15px;
+      margin-bottom: 20px;
+      border-radius: 6px;
+      border: none;
+      font-size: 1rem;
+      outline-offset: 2px;
+      outline-color: #5efc8d;
+      background: #0f1626;
+      color: #eee;
+      transition: background-color 0.3s ease;
+    }
+
+    input[type="text"]:focus,
+    select:focus {
+      background: #223354;
+      outline-color: #00ff9f;
+    }
+
+    button.submit-btn {
+      width: 100%;
+      padding: 14px;
+      background: #5efc8d;
+      border: none;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: #16213e;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button.submit-btn:hover:not(:disabled) {
+      background: #4cd673;
+    }
+
+    button.submit-btn:disabled {
+      background: #8fd9ae;
+      cursor: not-allowed;
+    }
+
+    .message {
+      text-align: center;
+      margin-top: 15px;
+      font-weight: 600;
+    }
+
+    .message.success {
+      color: #00ff9f;
+    }
+
+    .message.error {
+      color: #ff5656;
+    }
+  </style>
 </head>
 <body>
   <div class="payment-container">
     <h2>Checkout</h2>
 
-    <form id="checkout-form">
+    <form id="checkout-form" novalidate>
       <label for="username">Minecraft Username</label>
-      <input type="text" id="username" required />
+      <input type="text" id="username" name="username" placeholder="Your Minecraft username" required autocomplete="off" />
 
       <label for="method">Payment Method</label>
-      <select id="method" required>
+      <select id="method" name="method" required>
+        <option value="" disabled selected>Select a payment method</option>
         <option value="bkash">bKash</option>
         <option value="nagad">Nagad</option>
         <option value="upi">UPI</option>
       </select>
 
       <label for="txn">Transaction ID</label>
-      <input type="text" id="txn" required />
+      <input type="text" id="txn" name="txn" placeholder="Your payment transaction ID" required autocomplete="off" />
 
       <label for="email">Email / Discord</label>
-      <input type="text" id="email" required />
+      <input type="text" id="email" name="email" placeholder="Your Email or Discord tag" required autocomplete="off" />
 
       <button type="submit" class="submit-btn">Submit Order</button>
     </form>
+
+    <div id="message" class="message"></div>
   </div>
 
   <script>
     const form = document.getElementById('checkout-form');
+    const submitBtn = form.querySelector('button.submit-btn');
+    const messageDiv = document.getElementById('message');
+
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
+      // Clear messages
+      messageDiv.textContent = '';
+      messageDiv.className = 'message';
+
+      // Basic validation check
+      if (!form.checkValidity()) {
+        messageDiv.textContent = '⚠️ Please fill out all fields correctly.';
+        messageDiv.classList.add('error');
+        return;
+      }
+
+      // Disable button and show loading text
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Submitting...';
+
+      // Prepare data
       const payload = {
-        username: document.getElementById('username').value,
-        method: document.getElementById('method').value,
-        txn: document.getElementById('txn').value,
-        email: document.getElementById('email').value,
+        username: form.username.value.trim(),
+        method: form.method.value,
+        txn: form.txn.value.trim(),
+        email: form.email.value.trim(),
         cart: JSON.parse(localStorage.getItem('cartData')) || []
       };
 
-      const res = await fetch('/orders', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
+      try {
+        const res = await fetch('/orders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
 
-      if (res.ok) {
-        alert("✅ Order submitted!");
-        localStorage.clear();
-        window.location.href = "/";
-      } else {
-        alert("❌ Failed to submit. Try again.");
+        if (res.ok) {
+          messageDiv.textContent = "✅ Order submitted successfully!";
+          messageDiv.classList.add('success');
+          localStorage.removeItem('cartData');
+          form.reset();
+
+          // Redirect after short delay
+          setTimeout(() => {
+            window.location.href = "/";
+          }, 2000);
+        } else {
+          throw new Error('Network response was not ok');
+        }
+      } catch (error) {
+        messageDiv.textContent = "❌ Failed to submit order. Please try again.";
+        messageDiv.classList.add('error');
+        console.error('Order submission error:', error);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Submit Order';
       }
     });
   </script>
