@@ -6,9 +6,106 @@
   <title>Hulk SMP Store</title>
   <link rel="stylesheet" href="style.css" />
   <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Rubik', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #0f0f1a;
+      color: #eee;
+    }
+    header, nav, footer {
+      text-align: center;
+      padding: 20px;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 2.5rem;
+      color: #5efc8d;
+    }
+    nav a {
+      color: #a5d6ff;
+      margin: 0 15px;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .container {
+      padding: 20px;
+      max-width: 900px;
+      margin: auto;
+    }
+    .store-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    .item {
+      background: #1a1a2e;
+      padding: 20px;
+      border-radius: 10px;
+      flex: 1 1 200px;
+      box-shadow: 0 0 8px #3a7bd5;
+      text-align: center;
+    }
+    .item h3 {
+      color: #5efc8d;
+    }
+    .item button {
+      background-color: #5efc8d;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: background 0.3s ease;
+    }
+    .item button:hover {
+      background-color: #4cd673;
+    }
+    #cart {
+      margin-top: 40px;
+      background: #161b2d;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 5px #3a7bd5;
+    }
+    #cart ul {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 10px;
+    }
+    #cart ul li {
+      padding: 8px 0;
+      border-bottom: 1px solid #333;
+    }
+    .checkout-btn {
+      display: inline-block;
+      background: #5efc8d;
+      padding: 10px 20px;
+      border-radius: 5px;
+      color: #000;
+      font-weight: bold;
+      text-decoration: none;
+      transition: background 0.3s ease;
+    }
+    .checkout-btn:hover {
+      background: #4cd673;
+    }
+    .info-section {
+      padding: 30px 20px;
+      background: #111622;
+      margin-top: 40px;
+      text-align: center;
+    }
+    footer {
+      background: #0d0f1a;
+      font-size: 0.9rem;
+      color: #999;
+    }
+  </style>
 </head>
 <body>
-  <div class="background-animation"></div>
   <header>
     <h1>Hulk SMP Store</h1>
     <p>Buy Ranks, Crates, Perks & more!</p>
@@ -44,13 +141,13 @@
       <h2>Your Cart</h2>
       <ul id="cart-items"></ul>
       <p>Total: ৳<span id="total">0</span></p>
-      <a href="payment.html" class="checkout-btn">Checkout</a>
+      <a href="payment.html" class="checkout-btn">Proceed to Checkout</a>
     </div>
   </main>
 
   <section id="howtobuy" class="info-section">
     <h2>💳 How to Buy</h2>
-    <p>1. Add items to cart.<br>2. Proceed to checkout.<br>3. Pay via bKash, Nagad, or UPI.</p>
+    <p>1. Add items to cart.<br>2. Proceed to checkout.<br>3. Pay via bKash, Nagad, Rocket or UPI.<br>4. Submit payment info.</p>
   </section>
 
   <section id="contact" class="info-section">
@@ -65,6 +162,63 @@
     &copy; 2025 Hulk SMP. All rights reserved.
   </footer>
 
-  <script src="app.js"></script>
+  <script>
+    // LocalStorage-based cart logic
+    let cart = JSON.parse(localStorage.getItem('cartData')) || [];
+
+    const cartItemsUl = document.getElementById('cart-items');
+    const totalSpan = document.getElementById('total');
+
+    function renderCart() {
+      cartItemsUl.innerHTML = '';
+
+      if(cart.length === 0) {
+        cartItemsUl.innerHTML = '<li>Your cart is empty.</li>';
+        totalSpan.textContent = '0';
+        return;
+      }
+
+      cart.forEach((item, index) => {
+        const li = document.createElement('li');
+        li.textContent = `${item.name} - ৳${item.price}`;
+
+        const removeBtn = document.createElement('button');
+        removeBtn.textContent = '❌';
+        removeBtn.style.marginLeft = '10px';
+        removeBtn.style.backgroundColor = '#ff4444';
+        removeBtn.style.color = '#fff';
+        removeBtn.style.border = 'none';
+        removeBtn.style.borderRadius = '4px';
+        removeBtn.style.padding = '2px 6px';
+        removeBtn.style.cursor = 'pointer';
+
+        removeBtn.onclick = () => {
+          cart.splice(index, 1);
+          saveCart();
+          renderCart();
+        };
+
+        li.appendChild(removeBtn);
+        cartItemsUl.appendChild(li);
+      });
+
+      const totalPrice = cart.reduce((sum, item) => sum + item.price, 0);
+      totalSpan.textContent = totalPrice;
+    }
+
+    function addToCart(name, price) {
+      cart.push({name, price});
+      saveCart();
+      renderCart();
+    }
+
+    function saveCart() {
+      localStorage.setItem('cartData', JSON.stringify(cart));
+    }
+
+    renderCart(); // Initial call on page load
+
+    window.addToCart = addToCart; // expose for inline onclick
+  </script>
 </body>
 </html>
