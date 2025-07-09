@@ -1,35 +1,61 @@
-let cart = [];
-let total = 0;
+// app.js
 
-function addToCart(itemName, price) {
-  cart.push({ name: itemName, price });
-  total += price;
-  updateCart();
-}
+// কার্ট আইটেম গুলো লোকালস্টোরেজে রাখা হবে
+let cart = JSON.parse(localStorage.getItem('cartData')) || [];
 
-function updateCart() {
-  const cartList = document.getElementById('cart-items');
-  const totalDisplay = document.getElementById('total');
-  cartList.innerHTML = '';
+const cartItemsUl = document.getElementById('cart-items');
+const totalSpan = document.getElementById('total');
+
+function renderCart() {
+  cartItemsUl.innerHTML = '';
+
+  if(cart.length === 0) {
+    cartItemsUl.innerHTML = '<li>Your cart is empty.</li>';
+    totalSpan.textContent = '0';
+    return;
+  }
 
   cart.forEach((item, index) => {
     const li = document.createElement('li');
-    li.textContent = `${item.name} – ৳${item.price}`;
-    cartList.appendChild(li);
+    li.textContent = `${item.name} - ৳${item.price}`;
+    
+    // Remove button
+    const removeBtn = document.createElement('button');
+    removeBtn.textContent = 'Remove';
+    removeBtn.style.marginLeft = '10px';
+    removeBtn.style.backgroundColor = '#ff5555';
+    removeBtn.style.color = '#fff';
+    removeBtn.style.border = 'none';
+    removeBtn.style.borderRadius = '4px';
+    removeBtn.style.padding = '2px 6px';
+    removeBtn.style.cursor = 'pointer';
+    
+    removeBtn.onclick = () => {
+      cart.splice(index, 1);
+      saveCart();
+      renderCart();
+    };
+
+    li.appendChild(removeBtn);
+    cartItemsUl.appendChild(li);
   });
 
-  totalDisplay.textContent = total;
-  localStorage.setItem('cartData', JSON.stringify(cart));
-  localStorage.setItem('cartTotal', total);
+  const totalPrice = cart.reduce((sum, item) => sum + item.price, 0);
+  totalSpan.textContent = totalPrice;
 }
 
-// Load cart from storage if user goes to checkout
-window.onload = function () {
-  if (localStorage.getItem('cartData')) {
-    cart = JSON.parse(localStorage.getItem('cartData'));
-    total = parseInt(localStorage.getItem('cartTotal'), 10);
-    if (document.getElementById('cart-items')) {
-      updateCart();
-    }
-  }
-};
+function addToCart(name, price) {
+  cart.push({name, price});
+  saveCart();
+  renderCart();
+}
+
+function saveCart() {
+  localStorage.setItem('cartData', JSON.stringify(cart));
+}
+
+// Initialize cart display on page load
+renderCart();
+
+// এই ফাংশনগুলোকে আপনার HTML এর বাটনগুলোর onclick-এ ব্যবহার করবেন
+window.addToCart = addToCart;
